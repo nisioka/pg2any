@@ -15,30 +15,30 @@ import java.sql.SQLException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.postgresql.util.PGobject;
 
-public class {{ .name }}UserType implements UserType {
+public class {{ .name }}UserType implements UserType<{{ .name }}> {
   protected Class<{{ .name }}> getEnumClass() {
     return {{ .name }}.class;
   }
 
   @Override
-  public Object nullSafeGet(
-      ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner)
+  public {{ .name }} nullSafeGet(
+      ResultSet rs, int position, SharedSessionContractImplementor session, Object owner)
       throws HibernateException, SQLException {
-    Object o = rs.getObject(names[0]);
+    Object o = rs.getObject(position);
     if (o == null) {
       return null;
     }
     for ({{ .name }} enumValue : {{ .name }}.values()) {
-      if (enumValue.getValue().equals(({{ .dt }}) o)) {
+      if (enumValue.getValue().equals(o)) {
         return enumValue;
       }
     }
-    throw new UnsupportedOperationException("value=" + o + ", columnLabel=" + names[0]);
+    throw new UnsupportedOperationException("value=" + o);
   }
 
   @Override
   public void nullSafeSet(
-      PreparedStatement st, Object value, int index, SharedSessionContractImplementor session)
+      PreparedStatement st, {{ .name }} value, int index, SharedSessionContractImplementor session)
       throws HibernateException, SQLException {
     if (value == null) {
       st.setNull(index, Types.OTHER);
@@ -46,7 +46,7 @@ public class {{ .name }}UserType implements UserType {
       PGobject pgobject = new PGobject();
       pgobject.setType("{{ .snake }}");
       try {
-        pgobject.setValue((({{ .name }}) value).get{{ .dt }}());
+        pgobject.setValue(value.get{{ .dt }}());
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
@@ -56,17 +56,17 @@ public class {{ .name }}UserType implements UserType {
 
 
   @Override
-  public int[] sqlTypes() {
-    return new int[] {Types.VARCHAR};
+  public int getSqlType() {
+    return Types.VARCHAR;
   }
 
   @Override
-  public Class<?> returnedClass() {
+  public Class<{{ .name }}> returnedClass() {
     return getEnumClass();
   }
 
   @Override
-  public boolean equals(Object x, Object y) throws HibernateException {
+  public boolean equals({{ .name }} x, {{ .name }} y) throws HibernateException {
     if (x == y) {
       return true;
     }
@@ -77,12 +77,12 @@ public class {{ .name }}UserType implements UserType {
   }
 
   @Override
-  public int hashCode(Object x) throws HibernateException {
+  public int hashCode({{ .name }} x) throws HibernateException {
     return (x == null) ? 0 : x.hashCode();
   }
 
   @Override
-  public Object deepCopy(Object value) throws HibernateException {
+  public {{ .name }} deepCopy({{ .name }} value) throws HibernateException {
     return value;
   }
 
@@ -92,17 +92,17 @@ public class {{ .name }}UserType implements UserType {
   }
 
   @Override
-  public Serializable disassemble(Object value) throws HibernateException {
-    return (Serializable) value;
+  public Serializable disassemble({{ .name }} value) throws HibernateException {
+    return value;
   }
 
   @Override
-  public Object assemble(Serializable cached, Object owner) throws HibernateException {
-    return cached;
+  public {{ .name }} assemble(Serializable cached, Object owner) throws HibernateException {
+    return ({{ .name }}) cached;
   }
 
   @Override
-  public Object replace(Object original, Object target, Object owner) throws HibernateException {
+  public {{ .name }} replace({{ .name }} original, {{ .name }} target, Object owner) throws HibernateException {
     return original;
   }
 }
