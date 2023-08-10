@@ -23,6 +23,7 @@ type HibernateConfig struct {
 	Templates            string   `json:"templates"`
 	Overwrites           []string `json:"overwrites"`
 	PackageName          string   `json:"package_name"`
+	LibraryPackageName   string   `json:"library_package_name"`
 	IgnoreTables         []string `json:"ignore_tables"`
 	NotInsertableColumns []string `json:"not_insertable_columns"`
 	NotUpdatableColumns  []string `json:"not_updatable_columns"`
@@ -302,22 +303,24 @@ func (gen *Hibernate) anotations(col Column) []string {
 	}
 
 	if gen.enumExists(col.DataType) {
-		ret = append(ret, fmt.Sprintf(`@Type(type = "%s.%sUserType")`,
+		ret = append(ret, fmt.Sprintf(`@Type(value = %s.%sUserType.class)`,
 			gen.config.PackageName,
 			SnakeToUpperCamel(col.DataType)))
 	}
 
 	if col.DataType == "json" || col.DataType == "jsonb" {
-		ret = append(ret, `@Type(type = "JsonUserType")`)
+		ret = append(ret, fmt.Sprintf(`@Type(value = %s.JsonUserType.class)`,
+			gen.config.LibraryPackageName))
 	}
 
 	if col.Array {
-		t := strings.Title(gen.convertType(col))
-		ret = append(ret, fmt.Sprintf(`@Type(type = "%sArrayUserType")`, t))
+		ret = append(ret, fmt.Sprintf(`@Type(value = %s.%sArrayUserType.class)`,
+			gen.config.LibraryPackageName,
+			strings.Title(gen.convertType(col))))
 	}
 
 	if gen.config.VersionFieldColumn == col.Name {
-		ret = append(ret, fmt.Sprintf("@javax.persistence.Version"))
+		ret = append(ret, fmt.Sprintf("@jakarta.persistence.Version"))
 	}
 
 	column_args := make([]string, 0)

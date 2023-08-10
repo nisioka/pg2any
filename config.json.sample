@@ -7,6 +7,7 @@
       "templates": "templates/hibernate",
       "generate_metamodel": false,
       "package_name": "com.foo.bar.entity",
+      "library_package_name": "com.foo.bar.entity",
       "ignore_tables": [
         "flyway_schema_history"
       ],
